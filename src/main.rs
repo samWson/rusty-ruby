@@ -1,9 +1,6 @@
-extern crate regex;
-
 use std::env;
 use std::fs::File;
 use std::io::prelude::*;
-use regex::Regex;
 
 /// Rusty Ruby
 /// This program is the first stage of a Ruby interpreter. A ruby file is provided as an
@@ -94,20 +91,9 @@ fn main() {
 
     println!("{} contents: {:?}", filename, buffer);
 
-    // These are our individual characters of ruby code, ready for tokenization.
-    let mut chars: Vec<char> = Vec::new();
-    for char in buffer.chars() {
-        chars.push(char);
-    }
+    let tokens = buffer.tokenize();
 
-    // Creating a numeric matcher with regex
-    let numeric = Regex::new(r"\d|\.").unwrap();
-
-    for char in chars {
-        if numeric.is_match(&char.to_string()) {
-            println!("{} is a numeric.", char);
-        }
+    for token in tokens {
+        println!("{:?}", token);
     }
-    // println!("Our vec of chars: {:?}", chars); // chars is moved by the for in loop and no longer available.
-    // We can now make our collection of chars. It's time to iterate over them and tokenize.
 }

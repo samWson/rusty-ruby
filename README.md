@@ -5,7 +5,7 @@ Learn how Ruby works by implementing it in Rust.
 A good way to understand how something works is to make it. The goal of this project is to implement a Ruby interpreter using the Rust programming language.
 
 ## Usage
-The program can currently do the first stage of interpreting a Ruby program: Tokenization. A ruby file provided as an argument and the program outputs the resulting tokens.
+The program is an attempt to do the first stage of interpreting a Ruby program: Tokenization. A ruby file provided as an argument and the program outputs the resulting tokens.
 ```
 $ cargo run sample_ruby.rb
 ```

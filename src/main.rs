@@ -9,6 +9,17 @@ use regex::Regex;
 /// This program is the first stage of a Ruby interpreter. A ruby file is provided as an
 /// argument and tokenized.
 /// `$ cargo run simple.rb`
+
+/// Token is an individual part or word of a programming language. It identifies the type of token and it's literal value as a String.
+#[derive(Debug)]
+enum Token {
+    Ident(String),
+    Assign(String),
+    Integer(String),
+    Plus(String),
+}
+
+
 fn main() {
     let args: Vec<String> = env::args().collect();
 

@@ -7,15 +7,13 @@ A good way to understand how something works is to make it. The goal of this pro
 ## Usage
 The program can currently do the first stage of interpreting a Ruby program: Tokenization. A ruby file provided as an argument and the program outputs the resulting tokens.
 ```
-$ cargo run simple.rb
+$ cargo run sample_ruby.rb
 ```
 
 ### Limitations
-Currently only the most basic syntax will be supported. The example program `simple.rb` gives an indication of what can be tokenized.
+Currently only the most basic syntax will be supported. The example program `sample_ruby.rb` gives an indication of what can be tokenized. As the supported syntax grows more expression can be added to `sample_ruby.rb`.
 ```
-10.times do |n|
-  puts n
-end
+x = 2 + 3
 ```
 
 ## Licence

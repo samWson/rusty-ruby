@@ -11,7 +11,7 @@ use regex::Regex;
 /// `$ cargo run simple.rb`
 
 /// Token is an individual part or word of a programming language. It identifies the type of token and it's literal value as a String.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 enum Token {
     Ident(String),
     Assign(String),
@@ -19,6 +19,62 @@ enum Token {
     Plus(String),
 }
 
+/// Lexer is for a source e.g. String, file etc. into the individual tokens that make up the parts of a language.
+trait Lexer {
+    fn tokenize(&self) -> Vec<Token>;
+}
+
+impl Lexer for String {
+    fn tokenize(&self) -> Vec<Token> {
+        let mut characters = self.chars().peekable();
+        let mut tokens: Vec<Token> = vec![];
+
+        loop {
+            match characters.peek() {
+                Some(&ch) => match ch {
+                    'a'...'z' => {
+                        tokens.push(Token::Ident(ch.to_string()));
+                        characters.next();
+                    },
+                    '=' => {
+                        tokens.push(Token::Assign(ch.to_string()));
+                        characters.next();
+                    },
+                    '0'...'9' => {
+                        tokens.push(Token::Integer(ch.to_string()));
+                        characters.next();
+                    },
+                    '+' => {
+                        tokens.push(Token::Plus(ch.to_string()));
+                        characters.next();
+                    },
+                    ' ' | '\n' => {
+                        // Whitespace is ignored.
+                        characters.next();
+                    },
+                    _ => panic!("Unrecognized character"),
+                },
+                None => break // No more chars to tokenize.
+            }
+        }
+        tokens
+    }
+}
+
+#[test]
+fn test_tokenize() {
+    let simple_expression = "x = 2 + 3".to_string();
+
+    let expected = vec![
+        Token::Ident("x".to_string()),
+        Token::Assign("=".to_string()),
+        Token::Integer("2".to_string()),
+        Token::Plus("+".to_string()),
+        Token::Integer("3".to_string())
+    ];
+
+    assert_eq!(simple_expression.tokenize(), expected);
+}
 
 fn main() {
     let args: Vec<String> = env::args().collect();

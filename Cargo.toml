@@ -2,6 +2,3 @@
 name = "rusty-ruby"
 version = "0.1.0"
 authors = ["Samuel Wilson <samWson@users.noreply.github.com>"]
-
-[dependencies]
-regex = "0.2.10"

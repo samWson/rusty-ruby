@@ -1,6 +1,7 @@
 use std::env;
 use std::fs::File;
 use std::io::prelude::*;
+use std::io;
 
 /// Rusty Ruby
 /// This program is the first stage of a Ruby interpreter. A ruby file is provided as an
@@ -73,13 +74,32 @@ fn test_tokenize() {
     assert_eq!(simple_expression.tokenize(), expected);
 }
 
+fn start_repl() -> () {
+    let scanner = io::stdin();
+    let mut input = String::new();
+    const PROMPT: &str  = ">> ";
+
+    loop {
+        print!("{}", PROMPT);
+        match scanner.read_line(&mut input) {
+            Ok(_) => {
+                print!("{}", input);
+            }
+            Err(error) => {
+                println!("error: {}", error);
+                return
+            }
+        }
+    }
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
 
+    // Enter a REPL if there are no program arguments
     if args.len() == 1 {
-        // Exit the program if there are no arguments
-        println!(r"Usage:
-    rr <ruby-file>");
+        println!("Rusty Ruby Repl");
+        start_repl();
         std::process::exit(1);
     }
 

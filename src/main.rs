@@ -7,6 +7,7 @@ use std::io;
 /// This program is the first stage of a Ruby interpreter. A ruby file is provided as an
 /// argument and tokenized.
 /// `$ cargo run simple.rb`
+/// If the program is run without an argument it will enter Read Eval Print loop.
 
 /// Token is an individual part or word of a programming language. It identifies the type of token and it's literal value as a String.
 #[derive(Debug, PartialEq)]
@@ -77,19 +78,21 @@ fn test_tokenize() {
 fn start_repl() -> () {
     let scanner = io::stdin();
     let mut input = String::new();
-    const PROMPT: &str  = ">> ";
 
     loop {
-        print!("{}", PROMPT);
         match scanner.read_line(&mut input) {
             Ok(_) => {
-                print!("{}", input);
+                let tokens = input.tokenize();
+                for token in tokens {
+                    println!("{:?}", token);
+                }
             }
             Err(error) => {
                 println!("error: {}", error);
                 return
             }
         }
+        input = "".to_string(); // Clear the buffer
     }
 }
 

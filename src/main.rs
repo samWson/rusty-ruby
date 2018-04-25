@@ -62,17 +62,23 @@ impl Lexer for String {
 
 #[test]
 fn test_tokenize() {
-    let simple_expression = "x = 2 + 3".to_string();
+    let input = r"x = 2 + 3".to_string();
 
-    let expected = vec![
+    let test_conditions = vec![
         Token::Ident("x".to_string()),
         Token::Assign("=".to_string()),
         Token::Integer("2".to_string()),
         Token::Plus("+".to_string()),
         Token::Integer("3".to_string())
-    ];
+    ].into_iter();
 
-    assert_eq!(simple_expression.tokenize(), expected);
+    let tokens = input.tokenize().into_iter();
+
+    let test_cases = tokens.zip(test_conditions);
+
+    for (index, (actual, expected)) in test_cases.enumerate() {
+        assert_eq!(actual, expected, "\nTokenizing failed at test {}. Expected {:?}, got {:?}", index + 1, expected, actual);
+    }
 }
 
 fn start_repl() -> () {

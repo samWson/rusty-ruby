@@ -9,6 +9,7 @@ The program is an attempt to do the first stage of interpreting a Ruby program: 
 ```
 $ cargo run sample_ruby.rb
 ```
+If the program is run without arguments it will enter a Read Eval Print loop. Arbitrary code can be entered at the command line and the tokens will be produced as output.
 
 ### Limitations
 Currently only the most basic syntax will be supported. The example program `sample_ruby.rb` gives an indication of what can be tokenized. As the supported syntax grows more expression can be added to `sample_ruby.rb`.

@@ -16,6 +16,7 @@ enum Token {
     Assign(String),
     Integer(String),
     Plus(String),
+    Illegal(String),
 }
 
 /// Lexer is for a source e.g. String, file etc. into the individual tokens that make up the parts of a language.
@@ -51,7 +52,10 @@ impl Lexer for String {
                         // Whitespace is ignored.
                         characters.next();
                     },
-                    _ => panic!("Unrecognized character"),
+                    _ => {
+                        tokens.push(Token::Illegal(ch.to_string()));
+                        characters.next();
+                    },
                 },
                 None => break // No more chars to tokenize.
             }
@@ -62,14 +66,17 @@ impl Lexer for String {
 
 #[test]
 fn test_tokenize() {
-    let input = r"x = 2 + 3".to_string();
+    let input = r"x = 2 + 3
+~`".to_string();
 
     let test_conditions = vec![
         Token::Ident("x".to_string()),
         Token::Assign("=".to_string()),
         Token::Integer("2".to_string()),
         Token::Plus("+".to_string()),
-        Token::Integer("3".to_string())
+        Token::Integer("3".to_string()),
+        Token::Illegal("~".to_string()),
+        Token::Illegal("`".to_string()),
     ].into_iter();
 
     let tokens = input.tokenize().into_iter();

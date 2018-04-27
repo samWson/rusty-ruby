@@ -44,7 +44,8 @@ impl Lexer for String {
                         characters.next();
                     },
                     '0'...'9' => {
-                        tokens.push(Token::Integer(ch.to_string()));
+                        let integer_literal = read_number(&mut characters);
+                        tokens.push(Token::Integer(integer_literal));
                         characters.next();
                     },
                     '+' => {
@@ -83,6 +84,24 @@ fn read_identifier(characters: &mut std::iter::Peekable<std::str::Chars>) -> Str
         }
     }
     ident
+}
+
+fn read_number(characters: &mut Peekable<Chars>) -> String {
+    let mut number = String::new();
+
+    loop {
+        match characters.peek() {
+            Some(&ch) => match ch {
+                '0'...'9' => {
+                    number.push(ch);
+                    characters.next();
+                },
+                _ => break, // Reached the end of the number.
+            },
+            None => break
+        }
+    }
+    number
 }
 
 #[test]

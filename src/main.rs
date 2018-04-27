@@ -2,6 +2,8 @@ use std::env;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io;
+use std::iter::Peekable;
+use std::str::Chars;
 
 /// Rusty Ruby
 /// This program is the first stage of a Ruby interpreter. A ruby file is provided as an
@@ -32,8 +34,9 @@ impl Lexer for String {
         loop {
             match characters.peek() {
                 Some(&ch) => match ch {
-                    'a'...'z' => {
-                        tokens.push(Token::Ident(ch.to_string()));
+                    'a'...'z' | 'A'...'Z' => {
+                        let ident_literal = read_identifier(&mut characters);
+                        tokens.push(Token::Ident(ident_literal));
                         characters.next();
                     },
                     '=' => {
@@ -64,10 +67,41 @@ impl Lexer for String {
     }
 }
 
+fn read_identifier(characters: &mut std::iter::Peekable<std::str::Chars>) -> String {
+   let mut ident = String::new();
+
+    loop {
+        match characters.peek() {
+            Some(&ch) => match ch {
+                'a'...'z' | 'A'...'Z' => {
+                    ident.push(ch);
+                    characters.next();
+                },
+                _ => break, // Reached the end of the identifier.
+            },
+            None => break
+        }
+    }
+    ident
+}
+
+#[test]
+fn test_read_identifier(){
+    let mut characters = "five = 5".chars().peekable();
+
+    let expected = "five".to_string();
+
+    let actual = read_identifier(&mut characters);
+
+    assert_eq!(expected, actual);
+}
+
 #[test]
 fn test_tokenize() {
     let input = r"x = 2 + 3
-~`".to_string();
+~`
+five = 5
+TEN = 10".to_string();
 
     let test_conditions = vec![
         Token::Ident("x".to_string()),
@@ -77,6 +111,12 @@ fn test_tokenize() {
         Token::Integer("3".to_string()),
         Token::Illegal("~".to_string()),
         Token::Illegal("`".to_string()),
+        Token::Ident("five".to_string()),
+        Token::Assign("=".to_string()),
+        Token::Integer("5".to_string()),
+        Token::Ident("TEN".to_string()),
+        Token::Assign("=".to_string()),
+        Token::Integer("10".to_string()),
     ].into_iter();
 
     let tokens = input.tokenize().into_iter();

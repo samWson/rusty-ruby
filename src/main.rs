@@ -1,9 +1,9 @@
 use std::env;
 use std::fs::File;
-use std::io;
 use std::io::prelude::*;
 
 mod lexer;
+mod repl;
 mod token;
 
 use lexer::Lexer;
@@ -13,35 +13,13 @@ use lexer::Lexer;
 /// argument and tokenized.
 /// `$ cargo run simple.rb`
 /// If the program is run without an argument it will enter Read Eval Print loop.
-
-fn start_repl() -> () {
-    let scanner = io::stdin();
-    let mut input = String::new();
-
-    loop {
-        match scanner.read_line(&mut input) {
-            Ok(_) => {
-                let tokens = input.tokenize();
-                for token in tokens {
-                    println!("{:?}", token);
-                }
-            }
-            Err(error) => {
-                println!("error: {}", error);
-                return;
-            }
-        }
-        input = "".to_string(); // Clear the buffer
-    }
-}
-
 fn main() {
     let args: Vec<String> = env::args().collect();
 
     // Enter a REPL if there are no program arguments
     if args.len() == 1 {
         println!("Rusty Ruby Repl");
-        start_repl();
+        repl::start_repl();
         std::process::exit(1);
     }
 

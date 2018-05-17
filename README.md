@@ -27,6 +27,26 @@ end
 ```
 Note that it is not the responsibility of the Tokenizer to spot syntax errors. Any unrecognized character will be output as an illegal token.
 
+## Code Layout
+
+The source code is broken down into separate files based on responsibility.
+
+### Main
+
+`main.rs` is the entry point of the program.
+
+### Lexer
+
+`lexer.rs` is responsible for lexical analysis. A lexer scans each character in Ruby source code and produces appropriate tokens based on the values it scans.
+
+### REPL
+
+`repl.rs` is responsible for the Read Eval Print Loop. This can evaluate arbitrary code from the standard input, evaluate it, and print the result to the standard output. Currently it only outputs tokens.
+
+### Token
+
+`token.rs` is responsible for defining the tokens of the Ruby language. A token is a part of a language such as keywords, operators, identifiers etc.
+
 ## Licence
 This project is Open Sourced under the MIT licence. Although this project is personal learning exercise, it has been made using company time at [Flux Federation](http://fluxfederation.com/) during our hack days. All copyright and IP belongs to Flux Federation.
 

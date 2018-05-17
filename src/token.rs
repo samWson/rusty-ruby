@@ -12,4 +12,10 @@ pub enum Token {
     Comma(String),
     Return(String),
     End(String),
+    Bang(String),
+    Minus(String),
+    Slash(String),
+    Asterisk(String),
+    LessThan(String),
+    GreaterThan(String),
 }

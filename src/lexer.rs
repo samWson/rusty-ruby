@@ -34,6 +34,30 @@ impl Lexer for String {
                         tokens.push(Token::Plus(ch.to_string()));
                         characters.next();
                     }
+                    '-' => {
+                        tokens.push(Token::Minus(ch.to_string()));
+                        characters.next();
+                    }
+                    '*' => {
+                        tokens.push(Token::Asterisk(ch.to_string()));
+                        characters.next();
+                    }
+                    '/' => {
+                        tokens.push(Token::Slash(ch.to_string()));
+                        characters.next();
+                    }
+                    '!' => {
+                        tokens.push(Token::Bang(ch.to_string()));
+                        characters.next();
+                    }
+                    '<' => {
+                        tokens.push(Token::LessThan(ch.to_string()));
+                        characters.next();
+                    }
+                    '>' => {
+                        tokens.push(Token::GreaterThan(ch.to_string()));
+                        characters.next();
+                    }
                     '(' => {
                         tokens.push(Token::LParen(ch.to_string()));
                         characters.next();
@@ -69,7 +93,7 @@ fn read_identifier(characters: &mut std::iter::Peekable<std::str::Chars>) -> Str
     loop {
         match characters.peek() {
             Some(&ch) => match ch {
-                'a'...'z' | 'A'...'Z' => {
+                'a'...'z' | 'A'...'Z' | '_' => {
                     ident.push(ch);
                     characters.next();
                 }
@@ -144,7 +168,11 @@ TEN = 10
 
 def add(x, y)
   return x + y
-end"
+end
+
+result = add(five, TEN)
+!-/*4
+boolean_result = !(5 < 10 > 5)"
         .to_string();
 
     let test_conditions = vec![
@@ -173,6 +201,31 @@ end"
         Token::Plus("+".to_string()),
         Token::Ident("y".to_string()),
         Token::End("end".to_string()),
+        Token::Ident("result".to_string()),
+        Token::Assign("=".to_string()),
+        Token::Ident("add".to_string()),
+        Token::LParen("(".to_string()),
+        Token::Ident("five".to_string()),
+        Token::Comma(",".to_string()),
+        Token::Ident("TEN".to_string()),
+        Token::RParen(")".to_string()),
+        Token::Bang("!".to_string()),
+        Token::Minus("-".to_string()),
+        Token::Slash("/".to_string()),
+        Token::Asterisk("*".to_string()),
+        Token::Integer("4".to_string()),
+        Token::Ident("boolean_result".to_string()),
+        Token::Assign("=".to_string()),
+        Token::Bang("!".to_string()),
+        Token::LParen("(".to_string()),
+        Token::Integer("5".to_string()),
+        Token::LessThan("<".to_string()),
+        Token::Integer("10".to_string()),
+        Token::GreaterThan(">".to_string()),
+        Token::Integer("5".to_string()),
+        Token::RParen(")".to_string()),
+    ];
+
     // The iterator produced by zip() is the size of the smallest of the two zipped iterators.
     // This can mean some of the last test conditions will not be tested for, and the test will
     // still pass, if there are fewer tokens produced by tokenize() than expected.

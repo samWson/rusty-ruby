@@ -24,6 +24,10 @@ TEN = 10
 def add(x, y)
   return x + y
 end
+
+result = add(five, TEN)
+
+boolean_result = !(5 < 10 > 5)
 ```
 Note that it is not the responsibility of the Tokenizer to spot syntax errors. Any unrecognized character will be output as an illegal token.
 

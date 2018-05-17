@@ -5,27 +5,14 @@ use std::io::prelude::*;
 use std::iter::Peekable;
 use std::str::Chars;
 
+mod token;
+
+use token::Token;
 /// Rusty Ruby
 /// This program is the first stage of a Ruby interpreter. A ruby file is provided as an
 /// argument and tokenized.
 /// `$ cargo run simple.rb`
 /// If the program is run without an argument it will enter Read Eval Print loop.
-
-/// Token is an individual part or word of a programming language. It identifies the type of token and it's literal value as a String.
-#[derive(Debug, PartialEq)]
-enum Token {
-    Ident(String),
-    Assign(String),
-    Integer(String),
-    Plus(String),
-    Illegal(String),
-    Method(String),
-    LParen(String),
-    RParen(String),
-    Comma(String),
-    Return(String),
-    End(String),
-}
 
 /// Lexer is for a source e.g. String, file etc. into the individual tokens that make up the parts of a language.
 trait Lexer {

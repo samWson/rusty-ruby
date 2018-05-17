@@ -15,16 +15,20 @@ $ cargo run sample_ruby.rb
 If the program is run without arguments it will enter a Read Eval Print loop. Arbitrary code can be entered at the command line and the tokens will be produced as output.
 
 ### Limitations
-Currently only the most basic syntax will be supported. The example program `sample_ruby.rb` gives an indication of what can be tokenized. As the supported syntax grows more expressions can be added to `sample_ruby.rb`. 
+Currently only the most basic syntax will be supported. The example program `sample_ruby.rb` gives an indication of what can be tokenized. As the supported syntax grows more expressions can be added to `sample_ruby.rb`.
 ```
 x = 2 + 3
 five = 5
 TEN = 10
+
+def add(x, y)
+  return x + y
+end
 ```
 Note that it is not the responsibility of the Tokenizer to spot syntax errors. Any unrecognized character will be output as an illegal token.
 
 ## Licence
-This project is Open Sourced under the MIT licence. Athough this project is personal learning exercise, it has been made using company time at [Flux Federation](http://fluxfederation.com/) during our hack days. All copyright and IP belongs to Flux Federation.
+This project is Open Sourced under the MIT licence. Although this project is personal learning exercise, it has been made using company time at [Flux Federation](http://fluxfederation.com/) during our hack days. All copyright and IP belongs to Flux Federation.
 
 ## Contributions
 Contributions are welcome as long as the contributor is happy with the licencing and copyright as described above.

@@ -1,7 +1,7 @@
 use std::env;
 use std::fs::File;
-use std::io::prelude::*;
 use std::io;
+use std::io::prelude::*;
 use std::iter::Peekable;
 use std::str::Chars;
 
@@ -19,6 +19,12 @@ enum Token {
     Integer(String),
     Plus(String),
     Illegal(String),
+    Method(String),
+    LParen(String),
+    RParen(String),
+    Comma(String),
+    Return(String),
+    End(String),
 }
 
 /// Lexer is for a source e.g. String, file etc. into the individual tokens that make up the parts of a language.
@@ -36,32 +42,45 @@ impl Lexer for String {
                 Some(&ch) => match ch {
                     'a'...'z' | 'A'...'Z' => {
                         let ident_literal = read_identifier(&mut characters);
-                        tokens.push(Token::Ident(ident_literal));
-                        characters.next();
-                    },
+                        let token = lookup_identifier(ident_literal);
+                        tokens.push(token);
+                    }
                     '=' => {
                         tokens.push(Token::Assign(ch.to_string()));
                         characters.next();
-                    },
+                    }
                     '0'...'9' => {
                         let integer_literal = read_number(&mut characters);
                         tokens.push(Token::Integer(integer_literal));
                         characters.next();
-                    },
+                    }
                     '+' => {
                         tokens.push(Token::Plus(ch.to_string()));
                         characters.next();
-                    },
+                    }
+                    '(' => {
+                        tokens.push(Token::LParen(ch.to_string()));
+                        characters.next();
+                    }
+                    ')' => {
+                        tokens.push(Token::RParen(ch.to_string()));
+                        characters.next();
+                    }
+                    ',' => {
+                        tokens.push(Token::Comma(ch.to_string()));
+                        characters.next();
+                    }
                     ' ' | '\n' => {
                         // Whitespace is ignored.
                         characters.next();
-                    },
+                    }
+
                     _ => {
                         tokens.push(Token::Illegal(ch.to_string()));
                         characters.next();
-                    },
+                    }
                 },
-                None => break // No more chars to tokenize.
+                None => break, // No more chars to tokenize.
             }
         }
         tokens
@@ -69,7 +88,7 @@ impl Lexer for String {
 }
 
 fn read_identifier(characters: &mut std::iter::Peekable<std::str::Chars>) -> String {
-   let mut ident = String::new();
+    let mut ident = String::new();
 
     loop {
         match characters.peek() {
@@ -77,10 +96,10 @@ fn read_identifier(characters: &mut std::iter::Peekable<std::str::Chars>) -> Str
                 'a'...'z' | 'A'...'Z' => {
                     ident.push(ch);
                     characters.next();
-                },
+                }
                 _ => break, // Reached the end of the identifier.
             },
-            None => break
+            None => break,
         }
     }
     ident
@@ -95,17 +114,42 @@ fn read_number(characters: &mut Peekable<Chars>) -> String {
                 '0'...'9' => {
                     number.push(ch);
                     characters.next();
-                },
+                }
                 _ => break, // Reached the end of the number.
             },
-            None => break
+            None => break,
         }
     }
     number
 }
 
+fn lookup_identifier(identifier: String) -> Token {
+    match identifier.as_ref() {
+        "return" => Token::Return("return".to_string()),
+        "def" => Token::Method("def".to_string()),
+        "end" => Token::End("end".to_string()),
+        _ => Token::Ident(identifier.to_string()),
+    }
+}
+
 #[test]
-fn test_read_identifier(){
+fn test_lookup_identifier() {
+    let test_input = vec!["return".to_string(), "add".to_string()].into_iter();
+
+    let expected_results = vec![
+        Token::Return("return".to_string()),
+        Token::Ident("add".to_string()),
+    ].into_iter();
+
+    let test_cases = test_input.zip(expected_results);
+
+    for (input, expected_result) in test_cases {
+        assert_eq!(lookup_identifier(input), expected_result);
+    }
+}
+
+#[test]
+fn test_read_identifier() {
     let mut characters = "five = 5".chars().peekable();
 
     let expected = "five".to_string();
@@ -120,7 +164,13 @@ fn test_tokenize() {
     let input = r"x = 2 + 3
 ~`
 five = 5
-TEN = 10".to_string();
+TEN = 10
+
+def add(x, y)
+  return x + y
+end
+"
+        .to_string();
 
     let test_conditions = vec![
         Token::Ident("x".to_string()),
@@ -136,6 +186,18 @@ TEN = 10".to_string();
         Token::Ident("TEN".to_string()),
         Token::Assign("=".to_string()),
         Token::Integer("10".to_string()),
+        Token::Method("def".to_string()),
+        Token::Ident("add".to_string()),
+        Token::LParen("(".to_string()),
+        Token::Ident("x".to_string()),
+        Token::Comma(",".to_string()),
+        Token::Ident("y".to_string()),
+        Token::RParen(")".to_string()),
+        Token::Return("return".to_string()),
+        Token::Ident("x".to_string()),
+        Token::Plus("+".to_string()),
+        Token::Ident("y".to_string()),
+        Token::End("end".to_string()),
     ].into_iter();
 
     let tokens = input.tokenize().into_iter();
@@ -143,7 +205,14 @@ TEN = 10".to_string();
     let test_cases = tokens.zip(test_conditions);
 
     for (index, (actual, expected)) in test_cases.enumerate() {
-        assert_eq!(actual, expected, "\nTokenizing failed at test {}. Expected {:?}, got {:?}", index + 1, expected, actual);
+        assert_eq!(
+            actual,
+            expected,
+            "\nTokenizing failed at test {}. Expected {:?}, got {:?}",
+            index + 1,
+            expected,
+            actual
+        );
     }
 }
 
@@ -161,7 +230,7 @@ fn start_repl() -> () {
             }
             Err(error) => {
                 println!("error: {}", error);
-                return
+                return;
             }
         }
         input = "".to_string(); // Clear the buffer
@@ -182,7 +251,8 @@ fn main() {
     let filename = &args[1];
     let mut file = File::open(filename).expect(&format!("Error opening file: {}", filename));
     let mut buffer = String::new();
-    file.read_to_string(&mut buffer).expect(&format!("Error reading file: {}", filename));
+    file.read_to_string(&mut buffer)
+        .expect(&format!("Error reading file: {}", filename));
 
     println!("{} contents: {:?}", filename, buffer);
 

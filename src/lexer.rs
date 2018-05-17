@@ -29,7 +29,6 @@ impl Lexer for String {
                     '0'...'9' => {
                         let integer_literal = read_number(&mut characters);
                         tokens.push(Token::Integer(integer_literal));
-                        characters.next();
                     }
                     '+' => {
                         tokens.push(Token::Plus(ch.to_string()));
@@ -174,13 +173,17 @@ end"
         Token::Plus("+".to_string()),
         Token::Ident("y".to_string()),
         Token::End("end".to_string()),
-    ].into_iter();
+    // The iterator produced by zip() is the size of the smallest of the two zipped iterators.
+    // This can mean some of the last test conditions will not be tested for, and the test will
+    // still pass, if there are fewer tokens produced by tokenize() than expected.
+    let expected_test_case_count = test_conditions.len();
+    let mut tests_run = 0;
 
     let tokens = input.tokenize().into_iter();
 
     let test_cases = tokens.zip(test_conditions);
 
-    for (index, (actual, expected)) in test_cases.enumerate() {
+    for (index, (actual, expected)) in test_cases.into_iter().enumerate() {
         assert_eq!(
             actual,
             expected,
@@ -189,5 +192,12 @@ end"
             expected,
             actual
         );
+        tests_run += 1;
     }
+
+    assert_eq!(
+        tests_run, expected_test_case_count,
+        "\nFailed to test all conditions. {} tests run. Expected {}",
+        tests_run, expected_test_case_count
+    );
 }

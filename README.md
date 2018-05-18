@@ -28,6 +28,12 @@ end
 result = add(five, TEN)
 
 boolean_result = !(5 < 10 > 5)
+
+if (5 < 10)
+  return true
+else
+  return false
+end
 ```
 Note that it is not the responsibility of the Tokenizer to spot syntax errors. Any unrecognized character will be output as an illegal token.
 

@@ -9,3 +9,9 @@ end
 result = add(five, TEN)
 
 boolean_result = !(5 < 10 > 5)
+
+if (5 < 10)
+  return true
+else
+  return false
+end

@@ -128,6 +128,10 @@ fn lookup_identifier(identifier: String) -> Token {
         "return" => Token::Return("return".to_string()),
         "def" => Token::Method("def".to_string()),
         "end" => Token::End("end".to_string()),
+        "if" => Token::If("if".to_string()),
+        "else" => Token::Else("else".to_string()),
+        "true" => Token::True("true".to_string()),
+        "false" => Token::False("false".to_string()),
         _ => Token::Ident(identifier.to_string()),
     }
 }
@@ -172,7 +176,13 @@ end
 
 result = add(five, TEN)
 !-/*4
-boolean_result = !(5 < 10 > 5)"
+boolean_result = !(5 < 10 > 5)
+
+if (5 < 10)
+  return true
+else
+  return false
+end"
         .to_string();
 
     let test_conditions = vec![
@@ -224,6 +234,18 @@ boolean_result = !(5 < 10 > 5)"
         Token::GreaterThan(">".to_string()),
         Token::Integer("5".to_string()),
         Token::RParen(")".to_string()),
+        Token::If("if".to_string()),
+        Token::LParen("(".to_string()),
+        Token::Integer("5".to_string()),
+        Token::LessThan("<".to_string()),
+        Token::Integer("10".to_string()),
+        Token::RParen(")".to_string()),
+        Token::Return("return".to_string()),
+        Token::True("true".to_string()),
+        Token::Else("else".to_string()),
+        Token::Return("return".to_string()),
+        Token::False("false".to_string()),
+        Token::End("end".to_string()),
     ];
 
     let tokens = input.tokenize();

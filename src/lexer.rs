@@ -226,15 +226,22 @@ boolean_result = !(5 < 10 > 5)"
         Token::RParen(")".to_string()),
     ];
 
+    let tokens = input.tokenize();
+
     // The iterator produced by zip() is the size of the smallest of the two zipped iterators.
-    // This can mean some of the last test conditions will not be tested for, and the test will
-    // still pass, if there are fewer tokens produced by tokenize() than expected.
-    let expected_test_case_count = test_conditions.len();
-    let mut tests_run = 0;
+    // This can mean some of the last test conditions will not be tested for, or some of the last
+    // produced tokens will not be tesed, and the test will still pass if the produced tokens and
+    // test conditions are not equal in length.
+    let expected_tokens_count = test_conditions.len();
+    let tokens_count = tokens.len();
 
-    let tokens = input.tokenize().into_iter();
+    assert_eq!(
+        expected_tokens_count, tokens_count,
+        "\nNumber of produced tokens is not equal to the expected number. Expected {}, got {}.",
+        expected_tokens_count, tokens_count
+    );
 
-    let test_cases = tokens.zip(test_conditions);
+    let test_cases = tokens.into_iter().zip(test_conditions);
 
     for (index, (actual, expected)) in test_cases.into_iter().enumerate() {
         assert_eq!(
@@ -245,12 +252,5 @@ boolean_result = !(5 < 10 > 5)"
             expected,
             actual
         );
-        tests_run += 1;
     }
-
-    assert_eq!(
-        tests_run, expected_test_case_count,
-        "\nFailed to test all conditions. {} tests run. Expected {}",
-        tests_run, expected_test_case_count
-    );
 }

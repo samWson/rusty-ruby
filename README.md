@@ -8,7 +8,7 @@ A good way to understand how something works is to make it. The goal of this pro
 
 Source code for any language goes through several stages before any instructions are executed. A *lexer* analyses the source code and produces tokens, which are the *parts* of the language. A *parser* will parse the tokens into an *abstract syntax tree* or *AST* which represents the syntax of a program. An *interpreter* will then interpret the AST and execute the instructions required by the program.
 
-![Flow of a Ruby program through an interpreter](https://github.com/samWson/rusty-ruby/ruby-interpreter-flow-chart-jpg)
+![Flow of a Ruby program through an interpreter](https://github.com/samWson/rusty-ruby/blob/master/ruby-interpreter-flow-chart.jpg)
 
 ## Dependencies
 Make sure you have [Rust](https://www.rust-lang.org/en-US/install.html) installed.

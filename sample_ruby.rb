@@ -15,3 +15,6 @@ if (5 < 10)
 else
   return false
 end
+
+10 == 10
+10 != 9

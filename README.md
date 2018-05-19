@@ -34,6 +34,9 @@ if (5 < 10)
 else
   return false
 end
+
+10 == 10
+10 != 9
 ```
 Note that it is not the responsibility of the Tokenizer to spot syntax errors. Any unrecognized character will be output as an illegal token.
 

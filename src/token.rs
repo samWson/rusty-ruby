@@ -18,6 +18,8 @@ pub enum Token {
     Asterisk(String),
     LessThan(String),
     GreaterThan(String),
+    Equal(String),
+    NotEqual(String),
     If(String),
     Else(String),
     True(String),

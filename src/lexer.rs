@@ -23,8 +23,8 @@ impl Lexer for String {
                         tokens.push(token);
                     }
                     '=' => {
-                        tokens.push(Token::Assign(ch.to_string()));
-                        characters.next();
+                        let token = read_assign_or_equal(&mut characters);
+                        tokens.push(token);
                     }
                     '0'...'9' => {
                         let integer_literal = read_number(&mut characters);
@@ -47,8 +47,8 @@ impl Lexer for String {
                         characters.next();
                     }
                     '!' => {
-                        tokens.push(Token::Bang(ch.to_string()));
-                        characters.next();
+                        let token = read_bang_or_not_equal(&mut characters);
+                        tokens.push(token);
                     }
                     '<' => {
                         tokens.push(Token::LessThan(ch.to_string()));
@@ -74,7 +74,6 @@ impl Lexer for String {
                         // Whitespace is ignored.
                         characters.next();
                     }
-
                     _ => {
                         tokens.push(Token::Illegal(ch.to_string()));
                         characters.next();
@@ -123,6 +122,42 @@ fn read_number(characters: &mut Peekable<Chars>) -> String {
     number
 }
 
+/// read_assign_or_equal returns either an assignment or equality token.
+fn read_assign_or_equal(characters: &mut Peekable<Chars>) -> Token {
+    let mut literal = characters
+        .next()
+        .expect("Tried to read a '=', got None instead.")
+        .to_string();
+
+    let token: Token;
+    if let Some(&'=') = characters.peek() {
+        literal.push('=');
+        token = Token::Equal(literal);
+        characters.next();
+    } else {
+        token = Token::Assign(literal);
+    }
+    token
+}
+
+// read_bang_or_not_equal returns either a bang or not-equal token.
+fn read_bang_or_not_equal(characters: &mut Peekable<Chars>) -> Token {
+    let mut literal = characters
+        .next()
+        .expect("Tried to read a '=', got None instead.")
+        .to_string();
+
+    let token: Token;
+    if let Some(&'=') = characters.peek() {
+        literal.push('=');
+        token = Token::NotEqual(literal);
+        characters.next();
+    } else {
+        token = Token::Bang(literal);
+    }
+    token
+}
+
 fn lookup_identifier(identifier: String) -> Token {
     match identifier.as_ref() {
         "return" => Token::Return("return".to_string()),
@@ -134,6 +169,48 @@ fn lookup_identifier(identifier: String) -> Token {
         "false" => Token::False("false".to_string()),
         _ => Token::Ident(identifier.to_string()),
     }
+}
+
+// FIXME: This test really needs a better name to reflect its context.
+#[test]
+fn test_read_bang_or_not_equal_single() {
+    let mut input = "!(5 < 10)".chars().peekable();
+    let expected = Token::Bang("!".to_string());
+
+    let token = read_bang_or_not_equal(&mut input);
+
+    assert_eq!(token, expected);
+}
+
+// FIXME: This test really needs a better name to reflect its context.
+#[test]
+fn test_read_bang_or_not_equal_double() {
+    let mut input = "!= 5".chars().peekable();
+    let expected = Token::NotEqual("!=".to_string());
+
+    let token = read_bang_or_not_equal(&mut input);
+
+    assert_eq!(token, expected);
+}
+
+#[test]
+fn test_read_assign_or_equal_single() {
+    let mut input = "= 8".chars().peekable();
+    let expected = Token::Assign("=".to_string());
+
+    let token = read_assign_or_equal(&mut input);
+
+    assert_eq!(token, expected);
+}
+
+#[test]
+fn test_read_assign_or_equal_double() {
+    let mut input = "== 8".chars().peekable();
+    let expected = Token::Equal("==".to_string());
+
+    let token = read_assign_or_equal(&mut input);
+
+    assert_eq!(token, expected);
 }
 
 #[test]
@@ -182,7 +259,10 @@ if (5 < 10)
   return true
 else
   return false
-end"
+end
+
+10 == 10
+10 != 9"
         .to_string();
 
     let test_conditions = vec![
@@ -246,6 +326,12 @@ end"
         Token::Return("return".to_string()),
         Token::False("false".to_string()),
         Token::End("end".to_string()),
+        Token::Integer("10".to_string()),
+        Token::Equal("==".to_string()),
+        Token::Integer("10".to_string()),
+        Token::Integer("10".to_string()),
+        Token::NotEqual("!=".to_string()),
+        Token::Integer("9".to_string()),
     ];
 
     let tokens = input.tokenize();

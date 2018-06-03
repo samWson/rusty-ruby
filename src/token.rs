@@ -24,4 +24,5 @@ pub enum Token {
     Else(String),
     True(String),
     False(String),
+    Whitespace(String),
 }

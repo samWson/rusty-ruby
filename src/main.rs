@@ -2,7 +2,9 @@ use std::env;
 use std::fs::File;
 use std::io::prelude::*;
 
+mod ast;
 mod lexer;
+mod parser;
 mod repl;
 mod token;
 
@@ -32,9 +34,9 @@ fn main() {
 
     println!("{} contents: {:?}", filename, buffer);
 
-    let tokens = buffer.tokenize();
+    let lexer = Lexer::new(&buffer);
 
-    for token in tokens {
+    for token in lexer {
         println!("{:?}", token);
     }
 }

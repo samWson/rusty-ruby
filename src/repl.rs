@@ -11,8 +11,9 @@ pub fn start_repl() -> () {
     loop {
         match scanner.read_line(&mut input) {
             Ok(_) => {
-                let tokens = input.tokenize();
-                for token in tokens {
+                let lexer = Lexer::new(&input);
+                // let tokens = input.tokenize();
+                for token in lexer {
                     println!("{:?}", token);
                 }
             }

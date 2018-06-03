@@ -4,85 +4,97 @@ use std::str::Chars;
 use std; // Reference the std namspace in the root of the module i.e. main.rs.
 use token::Token;
 
-/// Lexer is for a source e.g. String, file etc. into the individual tokens that make up the parts of a language.
-pub trait Lexer {
-    fn tokenize(&self) -> Vec<Token>;
+/// Lexer produces the tokens of a given input.
+pub struct Lexer<'a> {
+    input: Peekable<Chars<'a>>,
 }
 
-impl Lexer for String {
-    fn tokenize(&self) -> Vec<Token> {
-        let mut characters = self.chars().peekable();
-        let mut tokens: Vec<Token> = vec![];
+impl<'a> Lexer<'a> {
+    pub fn new(input: &'a String) -> Lexer<'a> {
+        Lexer {
+            input: input.chars().peekable(),
+        }
+    }
 
-        loop {
-            match characters.peek() {
-                Some(&ch) => match ch {
-                    'a'...'z' | 'A'...'Z' => {
-                        let ident_literal = read_identifier(&mut characters);
-                        let token = lookup_identifier(ident_literal);
-                        tokens.push(token);
-                    }
-                    '=' => {
-                        let token = read_assign_or_equal(&mut characters);
-                        tokens.push(token);
-                    }
-                    '0'...'9' => {
-                        let integer_literal = read_number(&mut characters);
-                        tokens.push(Token::Integer(integer_literal));
-                    }
-                    '+' => {
-                        tokens.push(Token::Plus(ch.to_string()));
-                        characters.next();
-                    }
-                    '-' => {
-                        tokens.push(Token::Minus(ch.to_string()));
-                        characters.next();
-                    }
-                    '*' => {
-                        tokens.push(Token::Asterisk(ch.to_string()));
-                        characters.next();
-                    }
-                    '/' => {
-                        tokens.push(Token::Slash(ch.to_string()));
-                        characters.next();
-                    }
-                    '!' => {
-                        let token = read_bang_or_not_equal(&mut characters);
-                        tokens.push(token);
-                    }
-                    '<' => {
-                        tokens.push(Token::LessThan(ch.to_string()));
-                        characters.next();
-                    }
-                    '>' => {
-                        tokens.push(Token::GreaterThan(ch.to_string()));
-                        characters.next();
-                    }
-                    '(' => {
-                        tokens.push(Token::LParen(ch.to_string()));
-                        characters.next();
-                    }
-                    ')' => {
-                        tokens.push(Token::RParen(ch.to_string()));
-                        characters.next();
-                    }
-                    ',' => {
-                        tokens.push(Token::Comma(ch.to_string()));
-                        characters.next();
-                    }
-                    ' ' | '\n' => {
-                        // Whitespace is ignored.
-                        characters.next();
-                    }
-                    _ => {
-                        tokens.push(Token::Illegal(ch.to_string()));
-                        characters.next();
-                    }
-                },
-                None => break, // No more chars to tokenize.
+    fn next_token(&mut self) -> Option<Token> {
+        let token: Option<Token>;
+
+        match self.input.peek() {
+            Some(&ch) => match ch {
+                'a'...'z' | 'A'...'Z' => {
+                    let ident_literal = read_identifier(&mut self.input);
+                    token = Some(lookup_identifier(ident_literal));
+                }
+                '=' => {
+                    token = Some(read_assign_or_equal(&mut self.input));
+                }
+                '0'...'9' => {
+                    let integer_literal = read_number(&mut self.input);
+                    token = Some(Token::Integer(integer_literal));
+                }
+                '+' => {
+                    token = Some(Token::Plus(ch.to_string()));
+                    self.input.next();
+                }
+                '-' => {
+                    token = Some(Token::Minus(ch.to_string()));
+                    self.input.next();
+                }
+                '*' => {
+                    token = Some(Token::Asterisk(ch.to_string()));
+                    self.input.next();
+                }
+                '/' => {
+                    token = Some(Token::Slash(ch.to_string()));
+                    self.input.next();
+                }
+                '!' => {
+                    token = Some(read_bang_or_not_equal(&mut self.input));
+                }
+                '<' => {
+                    token = Some(Token::LessThan(ch.to_string()));
+                    self.input.next();
+                }
+                '>' => {
+                    token = Some(Token::GreaterThan(ch.to_string()));
+                    self.input.next();
+                }
+                '(' => {
+                    token = Some(Token::LParen(ch.to_string()));
+                    self.input.next();
+                }
+                ')' => {
+                    token = Some(Token::RParen(ch.to_string()));
+                    self.input.next();
+                }
+                ',' => {
+                    token = Some(Token::Comma(ch.to_string()));
+                    self.input.next();
+                }
+                ' ' | '\n' => {
+                    token = Some(Token::Whitespace(ch.to_string()));
+                    self.input.next();
+                }
+                _ => {
+                    token = Some(Token::Illegal(ch.to_string()));
+                    self.input.next();
+                }
+            },
+            None => {
+                self.input.next();
+                return None;
             }
         }
-        tokens
+
+        return token;
+    }
+}
+
+impl<'a> Iterator for Lexer<'a> {
+    type Item = Token;
+
+    fn next(&mut self) -> Option<Token> {
+        self.next_token()
     }
 }
 
@@ -144,7 +156,7 @@ fn read_assign_or_equal(characters: &mut Peekable<Chars>) -> Token {
 fn read_bang_or_not_equal(characters: &mut Peekable<Chars>) -> Token {
     let mut literal = characters
         .next()
-        .expect("Tried to read a '=', got None instead.")
+        .expect("Tried to read a '!', got None instead.")
         .to_string();
 
     let token: Token;
@@ -267,88 +279,142 @@ end
 
     let test_conditions = vec![
         Token::Ident("x".to_string()),
+        Token::Whitespace(' '.to_string()),
         Token::Assign("=".to_string()),
+        Token::Whitespace(' '.to_string()),
         Token::Integer("2".to_string()),
+        Token::Whitespace(' '.to_string()),
         Token::Plus("+".to_string()),
+        Token::Whitespace(' '.to_string()),
         Token::Integer("3".to_string()),
+        Token::Whitespace('\n'.to_string()),
         Token::Illegal("~".to_string()),
         Token::Illegal("`".to_string()),
+        Token::Whitespace('\n'.to_string()),
         Token::Ident("five".to_string()),
+        Token::Whitespace(' '.to_string()),
         Token::Assign("=".to_string()),
+        Token::Whitespace(' '.to_string()),
         Token::Integer("5".to_string()),
+        Token::Whitespace('\n'.to_string()),
         Token::Ident("TEN".to_string()),
+        Token::Whitespace(' '.to_string()),
         Token::Assign("=".to_string()),
+        Token::Whitespace(' '.to_string()),
         Token::Integer("10".to_string()),
+        Token::Whitespace('\n'.to_string()),
+        Token::Whitespace('\n'.to_string()),
         Token::Method("def".to_string()),
+        Token::Whitespace(' '.to_string()),
         Token::Ident("add".to_string()),
         Token::LParen("(".to_string()),
         Token::Ident("x".to_string()),
         Token::Comma(",".to_string()),
+        Token::Whitespace(' '.to_string()),
         Token::Ident("y".to_string()),
         Token::RParen(")".to_string()),
+        Token::Whitespace('\n'.to_string()),
+        Token::Whitespace(' '.to_string()),
+        Token::Whitespace(' '.to_string()),
         Token::Return("return".to_string()),
+        Token::Whitespace(' '.to_string()),
         Token::Ident("x".to_string()),
+        Token::Whitespace(' '.to_string()),
         Token::Plus("+".to_string()),
+        Token::Whitespace(' '.to_string()),
         Token::Ident("y".to_string()),
+        Token::Whitespace('\n'.to_string()),
         Token::End("end".to_string()),
+        Token::Whitespace('\n'.to_string()),
+        Token::Whitespace('\n'.to_string()),
         Token::Ident("result".to_string()),
+        Token::Whitespace(' '.to_string()),
         Token::Assign("=".to_string()),
+        Token::Whitespace(' '.to_string()),
         Token::Ident("add".to_string()),
         Token::LParen("(".to_string()),
         Token::Ident("five".to_string()),
         Token::Comma(",".to_string()),
+        Token::Whitespace(' '.to_string()),
         Token::Ident("TEN".to_string()),
         Token::RParen(")".to_string()),
+        Token::Whitespace('\n'.to_string()),
         Token::Bang("!".to_string()),
         Token::Minus("-".to_string()),
         Token::Slash("/".to_string()),
         Token::Asterisk("*".to_string()),
         Token::Integer("4".to_string()),
+        Token::Whitespace('\n'.to_string()),
         Token::Ident("boolean_result".to_string()),
+        Token::Whitespace(' '.to_string()),
         Token::Assign("=".to_string()),
+        Token::Whitespace(' '.to_string()),
         Token::Bang("!".to_string()),
         Token::LParen("(".to_string()),
         Token::Integer("5".to_string()),
+        Token::Whitespace(' '.to_string()),
         Token::LessThan("<".to_string()),
+        Token::Whitespace(' '.to_string()),
         Token::Integer("10".to_string()),
+        Token::Whitespace(' '.to_string()),
         Token::GreaterThan(">".to_string()),
+        Token::Whitespace(' '.to_string()),
         Token::Integer("5".to_string()),
         Token::RParen(")".to_string()),
+        Token::Whitespace('\n'.to_string()),
+        Token::Whitespace('\n'.to_string()),
         Token::If("if".to_string()),
+        Token::Whitespace(' '.to_string()),
         Token::LParen("(".to_string()),
         Token::Integer("5".to_string()),
+        Token::Whitespace(' '.to_string()),
         Token::LessThan("<".to_string()),
+        Token::Whitespace(' '.to_string()),
         Token::Integer("10".to_string()),
         Token::RParen(")".to_string()),
+        Token::Whitespace('\n'.to_string()),
+        Token::Whitespace(' '.to_string()),
+        Token::Whitespace(' '.to_string()),
         Token::Return("return".to_string()),
+        Token::Whitespace(' '.to_string()),
         Token::True("true".to_string()),
+        Token::Whitespace('\n'.to_string()),
         Token::Else("else".to_string()),
+        Token::Whitespace('\n'.to_string()),
+        Token::Whitespace(' '.to_string()),
+        Token::Whitespace(' '.to_string()),
         Token::Return("return".to_string()),
+        Token::Whitespace(' '.to_string()),
         Token::False("false".to_string()),
+        Token::Whitespace('\n'.to_string()),
         Token::End("end".to_string()),
+        Token::Whitespace('\n'.to_string()),
+        Token::Whitespace('\n'.to_string()),
         Token::Integer("10".to_string()),
+        Token::Whitespace(' '.to_string()),
         Token::Equal("==".to_string()),
+        Token::Whitespace(' '.to_string()),
         Token::Integer("10".to_string()),
+        Token::Whitespace('\n'.to_string()),
         Token::Integer("10".to_string()),
+        Token::Whitespace(' '.to_string()),
         Token::NotEqual("!=".to_string()),
+        Token::Whitespace(' '.to_string()),
         Token::Integer("9".to_string()),
     ];
 
-    let tokens = input.tokenize();
+    let mut lexer = Lexer::new(&input);
+    let mut tokens: Vec<Token> = vec![];
+    while let Some(token) = lexer.next() {
+        tokens.push(token);
+    }
 
     // The iterator produced by zip() is the size of the smallest of the two zipped iterators.
     // This can mean some of the last test conditions will not be tested for, or some of the last
     // produced tokens will not be tesed, and the test will still pass if the produced tokens and
     // test conditions are not equal in length.
     let expected_tokens_count = test_conditions.len();
-    let tokens_count = tokens.len();
-
-    assert_eq!(
-        expected_tokens_count, tokens_count,
-        "\nNumber of produced tokens is not equal to the expected number. Expected {}, got {}.",
-        expected_tokens_count, tokens_count
-    );
-
+    let mut tests_completed = 0;
     let test_cases = tokens.into_iter().zip(test_conditions);
 
     for (index, (actual, expected)) in test_cases.into_iter().enumerate() {
@@ -360,5 +426,13 @@ end
             expected,
             actual
         );
+
+        tests_completed += 1;
     }
+
+    assert_eq!(
+        expected_tokens_count, tests_completed,
+        "\nNumber of produced tokens is not equal to the expected number. Expected {}, got {}.",
+        expected_tokens_count, tests_completed
+    );
 }
